@@ -1,7 +1,6 @@
 const winston = require('winston');
 // require('winston-mongodb');
 
-
 module.exports = function () {
   winston.exceptions.handle(
     new winston.transports.Console({
