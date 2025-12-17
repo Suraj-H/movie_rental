@@ -1,0 +1,694 @@
+{
+	"info": {
+		"_postman_id": "movie-rental-api-collection",
+		"name": "Movie Rental API",
+		"description": "Complete API collection for Movie Rental application. Base URL: http://localhost:3000",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const token = pm.response.text();",
+									"    pm.environment.set('authToken', token);",
+									"    pm.collectionVariables.set('authToken', token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth"]
+						},
+						"description": "Authenticate user and receive JWT token. Token is automatically saved to collection variable 'authToken'."
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints"
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const token = pm.response.headers.get('x-auth-token');",
+									"    if (token) {",
+									"        pm.environment.set('authToken', token);",
+									"        pm.collectionVariables.set('authToken', token);",
+									"    }",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('userId', jsonData._id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users"]
+						},
+						"description": "Register a new user. Returns user object and sets x-auth-token header. Token is automatically saved."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User (Me)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}",
+								"description": "JWT token from login/register"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "me"]
+						},
+						"description": "Get current authenticated user's information. Requires authentication."
+					},
+					"response": []
+				}
+			],
+			"description": "User management endpoints"
+		},
+		{
+			"name": "Genres",
+			"item": [
+				{
+					"name": "Get All Genres",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/genres",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "genres"]
+						},
+						"description": "Get all genres sorted by name. No authentication required."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Genre by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/genres/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "genres", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{genreId}}",
+									"description": "Genre ID"
+								}
+							]
+						},
+						"description": "Get a specific genre by ID. No authentication required."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Genre",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('genreId', jsonData._id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}",
+								"description": "JWT token - required"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Action\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/genres",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "genres"]
+						},
+						"description": "Create a new genre. Requires authentication. Name must be 5-50 characters."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Genre",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}",
+								"description": "JWT token - required"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Sci-Fi\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/genres/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "genres", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{genreId}}",
+									"description": "Genre ID to update"
+								}
+							]
+						},
+						"description": "Update a genre by ID. Requires authentication. Name must be 5-50 characters."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Genre",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}",
+								"description": "JWT token - required (must be admin)"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/genres/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "genres", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{genreId}}",
+									"description": "Genre ID to delete"
+								}
+							]
+						},
+						"description": "Delete a genre by ID. Requires authentication AND admin role."
+					},
+					"response": []
+				}
+			],
+			"description": "Genre management endpoints"
+		},
+		{
+			"name": "Customers",
+			"item": [
+				{
+					"name": "Get All Customers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/customers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "customers"]
+						},
+						"description": "Get all customers sorted by name. No authentication required."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Customer by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/customers/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "customers", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{customerId}}",
+									"description": "Customer ID"
+								}
+							]
+						},
+						"description": "Get a specific customer by ID. No authentication required."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('customerId', jsonData._id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"phone\": \"1234567890\",\n  \"isGold\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/customers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "customers"]
+						},
+						"description": "Create a new customer. No authentication required. Name and phone must be 5-50 characters. isGold defaults to false."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Customer",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Jane Doe\",\n  \"phone\": \"9876543210\",\n  \"isGold\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/customers/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "customers", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{customerId}}",
+									"description": "Customer ID to update"
+								}
+							]
+						},
+						"description": "Update a customer by ID. No authentication required. Name and phone must be 5-50 characters."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Customer",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/customers/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "customers", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{customerId}}",
+									"description": "Customer ID to delete"
+								}
+							]
+						},
+						"description": "Delete a customer by ID. No authentication required."
+					},
+					"response": []
+				}
+			],
+			"description": "Customer management endpoints"
+		},
+		{
+			"name": "Movies",
+			"item": [
+				{
+					"name": "Get All Movies",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/movies",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "movies"]
+						},
+						"description": "Get all movies sorted by name. No authentication required."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Movie by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/movies/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "movies", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{movieId}}",
+									"description": "Movie ID"
+								}
+							]
+						},
+						"description": "Get a specific movie by ID. No authentication required."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Movie",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('movieId', jsonData._id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"The Matrix\",\n  \"genreId\": \"{{genreId}}\",\n  \"numberInStock\": 10,\n  \"dailyRentalRate\": 2.5\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/movies",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "movies"]
+						},
+						"description": "Create a new movie. No authentication required. Requires valid genreId. Title must be 5-50 characters. numberInStock and dailyRentalRate must be >= 0."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Movie",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"The Matrix Reloaded\",\n  \"genreId\": \"{{genreId}}\",\n  \"numberInStock\": 8,\n  \"dailyRentalRate\": 3.0\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/movies/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "movies", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{movieId}}",
+									"description": "Movie ID to update"
+								}
+							]
+						},
+						"description": "Update a movie by ID. No authentication required. Requires valid genreId. Title must be 5-50 characters. numberInStock and dailyRentalRate must be >= 0."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Movie",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/movies/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "movies", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{movieId}}",
+									"description": "Movie ID to delete"
+								}
+							]
+						},
+						"description": "Delete a movie by ID. No authentication required."
+					},
+					"response": []
+				}
+			],
+			"description": "Movie management endpoints"
+		},
+		{
+			"name": "Rentals",
+			"item": [
+				{
+					"name": "Get All Rentals",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/rentals",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "rentals"]
+						},
+						"description": "Get all rentals sorted by dateOut (newest first). No authentication required."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Rental by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/rentals/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "rentals", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{rentalId}}",
+									"description": "Rental ID"
+								}
+							]
+						},
+						"description": "Get a specific rental by ID. No authentication required."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Rental",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('rentalId', jsonData._id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customerId\": \"{{customerId}}\",\n  \"movieId\": \"{{movieId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/rentals",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "rentals"]
+						},
+						"description": "Create a new rental. No authentication required. Requires valid customerId and movieId. Movie must be in stock (numberInStock > 0). Automatically decrements movie stock. Uses MongoDB transaction for data consistency."
+					},
+					"response": []
+				}
+			],
+			"description": "Rental management endpoints"
+		},
+		{
+			"name": "Returns",
+			"item": [
+				{
+					"name": "Return Rental",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}",
+								"description": "JWT token - required"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customerId\": \"{{customerId}}\",\n  \"movieId\": \"{{movieId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/returns",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "returns"]
+						},
+						"description": "Process a rental return. Requires authentication. Requires valid customerId and movieId that match an active rental. Automatically calculates rental fee based on days rented and increments movie stock. Cannot return already returned rentals."
+					},
+					"response": []
+				}
+			],
+			"description": "Rental return endpoints"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "authToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "genreId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "customerId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "movieId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "rentalId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
