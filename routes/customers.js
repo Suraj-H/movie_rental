@@ -1,17 +1,15 @@
-const { Customer, validate } = require('../models/customer');
+const { Customer, validate: validateCustomer } = require('../models/customer');
 const mongoose = require('mongoose');
 const express = require('express');
 const router = express.Router();
+const validate = require('../middleware/validate');
 
 router.get('/', async (req, res) => {
   const customers = await Customer.find().sort('name');
   res.send(customers);
 });
 
-router.post('/', async (req, res) => {
-  const { error } = validate(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-
+router.post('/', validate(validateCustomer), async (req, res) => {
   let customer = new Customer({
     name: req.body.name,
     isGold: req.body.isGold,
@@ -22,10 +20,7 @@ router.post('/', async (req, res) => {
   res.send(customer);
 });
 
-router.put('/:id', async (req, res) => {
-  const { error } = validate(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-
+router.put('/:id', validate(validateCustomer), async (req, res) => {
   const customer = await Customer.findByIdAndUpdate(
     req.params.id,
     {
