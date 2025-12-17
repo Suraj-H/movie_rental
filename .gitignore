@@ -39,3 +39,5 @@ lerna-debug.log*
 !sample.env
 
 .cursor/
+
+.prettierrc
