@@ -323,6 +323,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+              },
+              {
+                "key": "x-auth-token",
+                "value": "{{authToken}}",
+                "description": "JWT token - required"
 							}
 						],
 						"body": {
@@ -334,7 +339,7 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "customers"]
 						},
-						"description": "Create a new customer. No authentication required. Name and phone must be 5-50 characters. isGold defaults to false."
+            "description": "Create a new customer. Requires authentication. Name and phone must be 5-50 characters. isGold defaults to false."
 					},
 					"response": []
 				},
@@ -346,6 +351,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+              },
+              {
+                "key": "x-auth-token",
+                "value": "{{authToken}}",
+                "description": "JWT token - required"
 							}
 						],
 						"body": {
@@ -364,7 +374,7 @@
 								}
 							]
 						},
-						"description": "Update a customer by ID. No authentication required. Name and phone must be 5-50 characters."
+            "description": "Update a customer by ID. Requires authentication. Name and phone must be 5-50 characters."
 					},
 					"response": []
 				},
@@ -372,7 +382,13 @@
 					"name": "Delete Customer",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+            "header": [
+              {
+                "key": "x-auth-token",
+                "value": "{{authToken}}",
+                "description": "JWT token - required"
+              }
+            ],
 						"url": {
 							"raw": "{{baseUrl}}/api/customers/:id",
 							"host": ["{{baseUrl}}"],
@@ -385,7 +401,7 @@
 								}
 							]
 						},
-						"description": "Delete a customer by ID. No authentication required."
+            "description": "Delete a customer by ID. Requires authentication."
 					},
 					"response": []
 				}
@@ -452,6 +468,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+              },
+              {
+                "key": "x-auth-token",
+                "value": "{{authToken}}",
+                "description": "JWT token - required"
 							}
 						],
 						"body": {
@@ -463,7 +484,7 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "movies"]
 						},
-						"description": "Create a new movie. No authentication required. Requires valid genreId. Title must be 5-50 characters. numberInStock and dailyRentalRate must be >= 0."
+            "description": "Create a new movie. Requires authentication. Requires valid genreId. Title must be 5-50 characters. numberInStock and dailyRentalRate must be >= 0."
 					},
 					"response": []
 				},
@@ -475,6 +496,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+              },
+              {
+                "key": "x-auth-token",
+                "value": "{{authToken}}",
+                "description": "JWT token - required"
 							}
 						],
 						"body": {
@@ -493,7 +519,7 @@
 								}
 							]
 						},
-						"description": "Update a movie by ID. No authentication required. Requires valid genreId. Title must be 5-50 characters. numberInStock and dailyRentalRate must be >= 0."
+            "description": "Update a movie by ID. Requires authentication. Requires valid genreId. Title must be 5-50 characters. numberInStock and dailyRentalRate must be >= 0."
 					},
 					"response": []
 				},
@@ -501,7 +527,13 @@
 					"name": "Delete Movie",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+            "header": [
+              {
+                "key": "x-auth-token",
+                "value": "{{authToken}}",
+                "description": "JWT token - required (admin role)"
+              }
+            ],
 						"url": {
 							"raw": "{{baseUrl}}/api/movies/:id",
 							"host": ["{{baseUrl}}"],
@@ -514,7 +546,7 @@
 								}
 							]
 						},
-						"description": "Delete a movie by ID. No authentication required."
+            "description": "Delete a movie by ID. Requires authentication AND admin role."
 					},
 					"response": []
 				}
@@ -581,6 +613,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+              },
+              {
+                "key": "x-auth-token",
+                "value": "{{authToken}}",
+                "description": "JWT token - required"
 							}
 						],
 						"body": {
@@ -592,7 +629,7 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "rentals"]
 						},
-						"description": "Create a new rental. No authentication required. Requires valid customerId and movieId. Movie must be in stock (numberInStock > 0). Automatically decrements movie stock. Uses MongoDB transaction for data consistency."
+            "description": "Create a new rental. Requires authentication. Requires valid customerId and movieId. Movie must be in stock (numberInStock > 0). Automatically decrements movie stock. Uses MongoDB transaction for data consistency."
 					},
 					"response": []
 				}
