@@ -10,6 +10,15 @@ module.exports = function (req, res, next) {
     req.user = decoded;
     next();
   } catch (ex) {
-    res.status(400).send('Invalid token.');
+    // JWT token expired error
+    if (ex.name === 'TokenExpiredError') {
+      return res.status(401).send('Token expired.');
+    }
+    // JWT token invalid error
+    if (ex.name === 'JsonWebTokenError') {
+      return res.status(401).send('Invalid token.');
+    }
+    // Default
+    res.status(401).send('Invalid token.');
   }
 };
