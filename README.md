@@ -428,7 +428,7 @@ Tokens are obtained through:
 ### `POST /api/customers`
 **Create a new customer**
 
-**Authentication:** Not required
+**Authentication:** Required (`x-auth-token` header)
 
 **Request Body:**
 ```json
@@ -461,7 +461,7 @@ Tokens are obtained through:
 ### `PUT /api/customers/:id`
 **Update a customer**
 
-**Authentication:** Not required
+**Authentication:** Required (`x-auth-token` header)
 
 **Parameters:**
 - `id`: Customer MongoDB ObjectId
@@ -492,7 +492,7 @@ Tokens are obtained through:
 ### `DELETE /api/customers/:id`
 **Delete a customer**
 
-**Authentication:** Not required
+**Authentication:** Required (`x-auth-token` header)
 
 **Parameters:**
 - `id`: Customer MongoDB ObjectId
@@ -567,7 +567,7 @@ Tokens are obtained through:
 ### `POST /api/movies`
 **Create a new movie**
 
-**Authentication:** Not required
+**Authentication:** Required (`x-auth-token` header)
 
 **Request Body:**
 ```json
@@ -608,7 +608,7 @@ Tokens are obtained through:
 ### `PUT /api/movies/:id`
 **Update a movie**
 
-**Authentication:** Not required
+**Authentication:** Required (`x-auth-token` header)
 
 **Parameters:**
 - `id`: Movie MongoDB ObjectId
@@ -644,7 +644,7 @@ Tokens are obtained through:
 ### `DELETE /api/movies/:id`
 **Delete a movie**
 
-**Authentication:** Not required
+**Authentication:** Required (`x-auth-token` header) + **Admin role**
 
 **Parameters:**
 - `id`: Movie MongoDB ObjectId
@@ -663,7 +663,9 @@ Tokens are obtained through:
 }
 ```
 
-**Error:** `404 Not Found` - Movie not found
+**Errors:**
+- `404 Not Found` - Movie not found
+- `403 Forbidden` - User is not admin
 
 ---
 
@@ -735,7 +737,7 @@ Tokens are obtained through:
 ### `POST /api/rentals`
 **Create a new rental**
 
-**Authentication:** Not required
+**Authentication:** Required (`x-auth-token` header)
 
 **Request Body:**
 ```json
@@ -830,7 +832,10 @@ Tokens are obtained through:
 - Validates rental exists and is not already returned
 - Calculates rental fee: `(days rented) × dailyRentalRate`
 - Sets `dateReturned` to current timestamp
-- Increments movie stock by 1
+- Uses MongoDB transaction for atomicity:
+  - Updates rental record with return date and fee
+  - Increments movie stock by 1
+- If any step fails, transaction is rolled back
 
 **Errors:**
 - `404 Not Found` - Rental not found
@@ -1022,11 +1027,11 @@ A complete Postman collection is included: `Movie_Rental_API.postman_collection.
 ### Usage Flow
 
 1. **Register/Login**: Start with "Register User" or "Login" to get authentication token
-2. **Create Resources**:
-   - Create a Genre (required for movies)
-   - Create a Movie (requires genreId)
-   - Create a Customer
-3. **Create Rental**: Use customerId and movieId
+2. **Create Resources** (all require authentication):
+   - Create a Genre (requires auth token)
+   - Create a Movie (requires auth token and genreId)
+   - Create a Customer (requires auth token)
+3. **Create Rental**: Use customerId and movieId (requires auth token)
 4. **Return Rental**: Process return with authentication token
 
 ### Collection Variables
@@ -1071,7 +1076,7 @@ npm test
 
 ### Database Transactions
 
-The rental creation endpoint uses MongoDB transactions for data consistency:
+The rental creation and return endpoints use MongoDB transactions for data consistency:
 
 ```javascript
 const session = await mongoose.startSession();
@@ -1086,6 +1091,21 @@ try {
   session.endSession();
 }
 ```
+
+### Database Schema Features
+
+All models include the following improvements:
+
+- **Automatic Timestamps**: All models have `createdAt` and `updatedAt` fields automatically managed by Mongoose
+- **Data Sanitization**: String fields use `trim` and `lowercase` where appropriate (email, genre names)
+- **Password Security**: User passwords are excluded from queries by default (`select: false`) and must be explicitly included when needed
+- **Database Indexes**: Optimized indexes for common query patterns:
+  - User: Email index for fast lookups
+  - Genre: Name index for sorting
+  - Movie: Title, genre._id, and numberInStock indexes
+  - Customer: Name and phone indexes
+  - Rental: Compound index on customer._id + movie._id for lookup, dateOut and dateReturned indexes for sorting/filtering
+- **Default Values**: Boolean and number fields have appropriate defaults (isAdmin: false, isGold: false, rentalFee: 0)
 
 ## 📝 API Workflow Example
 
@@ -1108,6 +1128,7 @@ try {
 3. **Create Movie**
    ```bash
    POST /api/movies
+   Headers: x-auth-token: <token>
    Body: {
      "title": "The Matrix",
      "genreId": "<genre_id>",
@@ -1120,6 +1141,7 @@ try {
 4. **Create Customer**
    ```bash
    POST /api/customers
+   Headers: x-auth-token: <token>
    Body: {
      "name": "John Doe",
      "phone": "1234567890",
@@ -1131,6 +1153,7 @@ try {
 5. **Create Rental**
    ```bash
    POST /api/rentals
+   Headers: x-auth-token: <token>
    Body: {
      "customerId": "<customer_id>",
      "movieId": "<movie_id>"
@@ -1190,6 +1213,13 @@ Movie Rental API - Express.js 5 RESTful API
 - `PUT /api/genres/:id` - Update genre
 - `DELETE /api/genres/:id` - Delete genre (Admin only)
 - `GET /api/users/me` - Get current user
+- `POST /api/customers` - Create customer
+- `PUT /api/customers/:id` - Update customer
+- `DELETE /api/customers/:id` - Delete customer
+- `POST /api/movies` - Create movie
+- `PUT /api/movies/:id` - Update movie
+- `DELETE /api/movies/:id` - Delete movie (Admin only)
+- `POST /api/rentals` - Create rental
 - `POST /api/returns` - Process return
 
 ### No Authentication Required
@@ -1197,9 +1227,12 @@ Movie Rental API - Express.js 5 RESTful API
 - `GET /api/genres/:id` - Get genre
 - `POST /api/users` - Register user
 - `POST /api/auth` - Login
-- All customer endpoints
-- All movie endpoints
-- All rental endpoints (except returns)
+- `GET /api/customers` - List customers
+- `GET /api/customers/:id` - Get customer
+- `GET /api/movies` - List movies
+- `GET /api/movies/:id` - Get movie
+- `GET /api/rentals` - List rentals
+- `GET /api/rentals/:id` - Get rental
 
 ---
 
