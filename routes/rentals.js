@@ -8,12 +8,20 @@ const validate = require('../middleware/validate');
 const auth = require('../middleware/auth');
 const validateObjectId = require('../middleware/validateObjectId');
 const winston = require('winston');
+const {
+  HTTP_STATUS,
+  ERROR_MESSAGES,
+  RESOURCES,
+  LOG_MESSAGES,
+} = require('../utils/constants');
 
 router.get('/:id', validateObjectId, async (req, res) => {
   const rental = await Rental.findById(req.params.id);
 
   if (!rental)
-    return res.status(404).send('The rental with the given ID was not found.');
+    return res
+      .status(HTTP_STATUS.NOT_FOUND)
+      .send(ERROR_MESSAGES.RESOURCE_NOT_FOUND(RESOURCES.RENTAL));
 
   res.send(rental);
 });
@@ -25,10 +33,16 @@ router.get('/', async (req, res) => {
 
 router.post('/', [auth, validate(validateRental)], async (req, res) => {
   const customer = await Customer.findById(req.body.customerId);
-  if (!customer) return res.status(400).send('Invalid customer.');
+  if (!customer)
+    return res
+      .status(HTTP_STATUS.BAD_REQUEST)
+      .send(ERROR_MESSAGES.INVALID_CUSTOMER);
 
   const movie = await Movie.findById(req.body.movieId);
-  if (!movie) return res.status(400).send('Invalid movie.');
+  if (!movie)
+    return res
+      .status(HTTP_STATUS.BAD_REQUEST)
+      .send(ERROR_MESSAGES.INVALID_MOVIE);
 
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -41,7 +55,9 @@ router.post('/', [auth, validate(validateRental)], async (req, res) => {
 
     if (!movieInTransaction) {
       await session.abortTransaction();
-      return res.status(400).send('Movie not in stock.');
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .send(ERROR_MESSAGES.MOVIE_NOT_IN_STOCK);
     }
 
     let rental = new Rental({
@@ -67,8 +83,10 @@ router.post('/', [auth, validate(validateRental)], async (req, res) => {
     res.send(rental);
   } catch (ex) {
     await session.abortTransaction();
-    winston.error('Rental creation failed:', ex);
-    res.status(500).send('Something failed.');
+    winston.error(LOG_MESSAGES.RENTAL_CREATION_FAILED, ex);
+    res
+      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+      .send(ERROR_MESSAGES.SOMETHING_FAILED);
   } finally {
     session.endSession();
   }

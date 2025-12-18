@@ -7,14 +7,24 @@ const mongoose = require('mongoose');
 const winston = require('winston');
 const express = require('express');
 const router = express.Router();
+const {
+  HTTP_STATUS,
+  ERROR_MESSAGES,
+  LOG_MESSAGES,
+} = require('../utils/constants');
 
 router.post('/', [auth, validate(validateReturn)], async (req, res) => {
   const rental = await Rental.lookup(req.body.customerId, req.body.movieId);
 
-  if (!rental) return res.status(404).send('Rental not found.');
+  if (!rental)
+    return res
+      .status(HTTP_STATUS.NOT_FOUND)
+      .send(ERROR_MESSAGES.RENTAL_NOT_FOUND);
 
   if (rental.dateReturned)
-    return res.status(400).send('Return already processed.');
+    return res
+      .status(HTTP_STATUS.BAD_REQUEST)
+      .send(ERROR_MESSAGES.RETURN_ALREADY_PROCESSED);
 
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -33,8 +43,10 @@ router.post('/', [auth, validate(validateReturn)], async (req, res) => {
     res.send(rental);
   } catch (ex) {
     await session.abortTransaction();
-    winston.error('Return processing failed:', ex);
-    res.status(500).send('Something failed.');
+    winston.error(LOG_MESSAGES.RETURN_PROCESSING_FAILED, ex);
+    res
+      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+      .send(ERROR_MESSAGES.SOMETHING_FAILED);
   } finally {
     session.endSession();
   }

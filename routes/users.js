@@ -4,6 +4,7 @@ const { User, validate: validateUser } = require('../models/user');
 const express = require('express');
 const router = express.Router();
 const validate = require('../middleware/validate');
+const { HTTP_STATUS, HEADERS, ERROR_MESSAGES } = require('../utils/constants');
 
 router.get('/me', auth, async (req, res) => {
   const user = await User.findById(req.user._id).select('-password');
@@ -12,7 +13,10 @@ router.get('/me', auth, async (req, res) => {
 
 router.post('/', validate(validateUser), async (req, res) => {
   let user = await User.findOne({ email: req.body.email });
-  if (user) return res.status(400).send('User already registered.');
+  if (user)
+    return res
+      .status(HTTP_STATUS.BAD_REQUEST)
+      .send(ERROR_MESSAGES.USER_ALREADY_REGISTERED);
 
   user = new User({
     name: req.body.name,
@@ -25,7 +29,7 @@ router.post('/', validate(validateUser), async (req, res) => {
 
   const token = user.generateAuthToken();
   const { _id, name, email } = user;
-  res.header('x-auth-token', token).send({ _id, name, email });
+  res.header(HEADERS.AUTH_TOKEN, token).send({ _id, name, email });
 });
 
 module.exports = router;

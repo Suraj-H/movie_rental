@@ -6,12 +6,19 @@ const validate = require('../middleware/validate');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const validateObjectId = require('../middleware/validateObjectId');
+const {
+  HTTP_STATUS,
+  ERROR_MESSAGES,
+  RESOURCES,
+} = require('../utils/constants');
 
 router.get('/:id', validateObjectId, async (req, res) => {
   const movie = await Movie.findById(req.params.id);
 
   if (!movie)
-    return res.status(404).send('The movie with the given ID was not found.');
+    return res
+      .status(HTTP_STATUS.NOT_FOUND)
+      .send(ERROR_MESSAGES.RESOURCE_NOT_FOUND(RESOURCES.MOVIE));
 
   res.send(movie);
 });
@@ -23,7 +30,10 @@ router.get('/', async (req, res) => {
 
 router.post('/', [auth, validate(validateMovie)], async (req, res) => {
   const genre = await Genre.findById(req.body.genreId);
-  if (!genre) return res.status(400).send('Invalid genre.');
+  if (!genre)
+    return res
+      .status(HTTP_STATUS.BAD_REQUEST)
+      .send(ERROR_MESSAGES.INVALID_GENRE);
 
   const movie = new Movie({
     title: req.body.title,
@@ -44,7 +54,10 @@ router.put(
   [auth, validateObjectId, validate(validateMovie)],
   async (req, res) => {
     const genre = await Genre.findById(req.body.genreId);
-    if (!genre) return res.status(400).send('Invalid genre.');
+    if (!genre)
+      return res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .send(ERROR_MESSAGES.INVALID_GENRE);
 
     const movie = await Movie.findOneAndUpdate(
       { _id: req.params.id },
@@ -61,7 +74,9 @@ router.put(
     );
 
     if (!movie)
-      return res.status(404).send('The movie with the given ID was not found.');
+      return res
+        .status(HTTP_STATUS.NOT_FOUND)
+        .send(ERROR_MESSAGES.RESOURCE_NOT_FOUND(RESOURCES.MOVIE));
 
     res.send(movie);
   },
@@ -71,7 +86,9 @@ router.delete('/:id', [auth, admin, validateObjectId], async (req, res) => {
   const movie = await Movie.findOneAndDelete({ _id: req.params.id });
 
   if (!movie)
-    return res.status(404).send('The movie with the given ID was not found.');
+    return res
+      .status(HTTP_STATUS.NOT_FOUND)
+      .send(ERROR_MESSAGES.RESOURCE_NOT_FOUND(RESOURCES.MOVIE));
 
   res.send(movie);
 });

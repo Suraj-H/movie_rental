@@ -5,12 +5,19 @@ const { Genre, validate: validateGenre } = require('../models/genre');
 const express = require('express');
 const router = express.Router();
 const validate = require('../middleware/validate');
+const {
+  HTTP_STATUS,
+  ERROR_MESSAGES,
+  RESOURCES,
+} = require('../utils/constants');
 
 router.get('/:id', validateObjectId, async (req, res) => {
   const genre = await Genre.findById(req.params.id);
 
   if (!genre)
-    return res.status(404).send('The genre with the given ID was not found.');
+    return res
+      .status(HTTP_STATUS.NOT_FOUND)
+      .send(ERROR_MESSAGES.RESOURCE_NOT_FOUND(RESOURCES.GENRE));
 
   res.send(genre);
 });
@@ -41,7 +48,9 @@ router.put(
     );
 
     if (!genre)
-      return res.status(404).send('The genre with the given ID was not found.');
+      return res
+        .status(HTTP_STATUS.NOT_FOUND)
+        .send(ERROR_MESSAGES.RESOURCE_NOT_FOUND(RESOURCES.GENRE));
 
     res.send(genre);
   },
@@ -51,7 +60,9 @@ router.delete('/:id', [auth, admin, validateObjectId], async (req, res) => {
   const genre = await Genre.findOneAndDelete({ _id: req.params.id });
 
   if (!genre)
-    return res.status(404).send('The genre with the given ID was not found.');
+    return res
+      .status(HTTP_STATUS.NOT_FOUND)
+      .send(ERROR_MESSAGES.RESOURCE_NOT_FOUND(RESOURCES.GENRE));
 
   res.send(genre);
 });

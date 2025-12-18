@@ -4,14 +4,19 @@ const router = express.Router();
 const validate = require('../middleware/validate');
 const auth = require('../middleware/auth');
 const validateObjectId = require('../middleware/validateObjectId');
+const {
+  HTTP_STATUS,
+  ERROR_MESSAGES,
+  RESOURCES,
+} = require('../utils/constants');
 
 router.get('/:id', validateObjectId, async (req, res) => {
   const customer = await Customer.findById(req.params.id);
 
   if (!customer)
     return res
-      .status(404)
-      .send('The customer with the given ID was not found.');
+      .status(HTTP_STATUS.NOT_FOUND)
+      .send(ERROR_MESSAGES.RESOURCE_NOT_FOUND(RESOURCES.CUSTOMER));
 
   res.send(customer);
 });
@@ -48,8 +53,8 @@ router.put(
 
     if (!customer)
       return res
-        .status(404)
-        .send('The customer with the given ID was not found.');
+        .status(HTTP_STATUS.NOT_FOUND)
+        .send(ERROR_MESSAGES.RESOURCE_NOT_FOUND(RESOURCES.CUSTOMER));
 
     res.send(customer);
   },
@@ -60,8 +65,8 @@ router.delete('/:id', [auth, validateObjectId], async (req, res) => {
 
   if (!customer)
     return res
-      .status(404)
-      .send('The customer with the given ID was not found.');
+      .status(HTTP_STATUS.NOT_FOUND)
+      .send(ERROR_MESSAGES.RESOURCE_NOT_FOUND(RESOURCES.CUSTOMER));
 
   res.send(customer);
 });

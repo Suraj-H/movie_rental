@@ -7,15 +7,16 @@ const users = require('../routes/users');
 const auth = require('../routes/auth');
 const returns = require('../routes/returns');
 const error = require('../middleware/error');
+const { ROUTES } = require('../utils/constants');
 
 module.exports = function (app) {
   app.use(express.json());
-  app.use('/api/genres', genres);
-  app.use('/api/customers', customers);
-  app.use('/api/movies', movies);
-  app.use('/api/rentals', rentals);
-  app.use('/api/users', users);
-  app.use('/api/auth', auth);
-  app.use('/api/returns', returns);
+  app.use(ROUTES.GENRES, genres);
+  app.use(ROUTES.CUSTOMERS, customers);
+  app.use(ROUTES.MOVIES, movies);
+  app.use(ROUTES.RENTALS, rentals);
+  app.use(ROUTES.USERS, users);
+  app.use(ROUTES.AUTH, auth);
+  app.use(ROUTES.RETURNS, returns);
   app.use(error);
 };
