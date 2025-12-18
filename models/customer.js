@@ -1,14 +1,14 @@
 const Joi = require('joi');
 const mongoose = require('mongoose');
 
-const Customer = mongoose.model(
-  'Customer',
-  new mongoose.Schema({
+const customerSchema = new mongoose.Schema(
+  {
     name: {
       type: String,
       required: true,
       minlength: 5,
       maxlength: 50,
+      trim: true,
     },
     isGold: {
       type: Boolean,
@@ -19,9 +19,17 @@ const Customer = mongoose.model(
       required: true,
       minlength: 5,
       maxlength: 50,
+      trim: true,
     },
-  }),
+  },
+  { timestamps: true },
 );
+
+// Indexes for common queries
+customerSchema.index({ name: 1 });
+customerSchema.index({ phone: 1 });
+
+const Customer = mongoose.model('Customer', customerSchema);
 
 function validateCustomer(customer) {
   const schema = Joi.object({

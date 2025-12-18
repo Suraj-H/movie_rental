@@ -1,14 +1,22 @@
 const Joi = require('joi');
 const mongoose = require('mongoose');
 
-const genreSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    minlength: 5,
-    maxlength: 50,
+const genreSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      minlength: 5,
+      maxlength: 50,
+      lowercase: true,
+      trim: true,
+    },
   },
-});
+  { timestamps: true },
+);
+
+// Index for sorting by name
+genreSchema.index({ name: 1 });
 
 const Genre = mongoose.model('Genre', genreSchema);
 

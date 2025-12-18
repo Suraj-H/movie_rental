@@ -6,7 +6,7 @@ const router = express.Router();
 const validate = require('../middleware/validate');
 
 router.post('/', validate(validateAuth), async (req, res) => {
-  let user = await User.findOne({ email: req.body.email });
+  let user = await User.findOne({ email: req.body.email }).select('+password');
   if (!user) return res.status(400).send('Invalid email or password.');
 
   const validPassword = await bcrypt.compare(req.body.password, user.password);
